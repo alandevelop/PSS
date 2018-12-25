@@ -53,43 +53,66 @@ class Client
 
     public static function search($post)
     {
-        $name = empty($_POST['name']) ? false : $_POST['name'];
-        $phone = empty($_POST['phone']) ? false : $_POST['phone'];
-        $email = empty($_POST['email']) ? false : $_POST['email'];
-        $age = empty($_POST['age']) ? false : $_POST['age'];
+        $conditionParams = [];
+
+        if (!empty($_POST['name'])) {
+            $conditionParams['name'] = $_POST['name'];
+        }
+        if (!empty($_POST['phone'])) {
+            $conditionParams['phone'] = $_POST['phone'];
+        }
+        if (!empty($_POST['email'])) {
+            $conditionParams['email'] = $_POST['email'];
+        }
+        if (!empty($_POST['age'])) {
+            $conditionParams['age'] = $_POST['age'];
+        }
 
         $db = Db::getInstance();
         $sql = "SELECT * FROM clients";
 
-        if ($name || $phone || $email || $age) {
+
+        if (!empty($conditionParams)){
             $sql .= " WHERE ";
-            if ($name) {
-                $sql .= "name=:name AND ";
-            }
-            if ($phone) {
-                $sql .= "phone=:phone AND ";
-            }
-            if ($email) {
-                $sql .= "email=:email AND ";
-            }
-            if ($age) {
-                $sql .= "age=:age";
+
+            if (count($conditionParams) > 1) {
+                if (array_key_exists('name', $conditionParams)) {
+                    $sql .= "name=:name AND ";
+                }
+                if (array_key_exists('phone', $conditionParams)) {
+                    $sql .= "phone=:phone AND ";
+                }
+                if (array_key_exists('email', $conditionParams)) {
+                    $sql .= "email=:email AND ";
+                }
+                if (array_key_exists('age', $conditionParams)) {
+                    $sql .= "age=:age";
+                }
+            } else {
+                if (array_key_exists('name', $conditionParams)) {
+                    $sql .= "name=:name";
+                }
+                if (array_key_exists('phone', $conditionParams)) {
+                    $sql .= "phone=:phone";
+                }
+                if (array_key_exists('email', $conditionParams)) {
+                    $sql .= "email=:email";
+                }
+                if (array_key_exists('age', $conditionParams)) $sql .= "age=:age";
             }
 
             $statment = $db->prepare($sql);
 
-            if ($name) {
-                $statment->bindParam(':name', $name);
+            if (array_key_exists('name', $conditionParams)) {
+                $statment->bindParam(':name', $conditionParams['name']);
             }
-            if ($phone) {
-                $statment->bindParam(':phone', $phone);
+            if (array_key_exists('phone', $conditionParams)) {
+                $statment->bindParam(':phone', $conditionParams['phone']);
             }
-            if ($email) {
-                $statment->bindParam(':email', $email);
+            if (array_key_exists('email', $conditionParams)) {
+                $statment->bindParam(':email', $conditionParams['email']);
             }
-            if ($age) {
-                $statment->bindParam(':age', $age);
-            }
+            if (array_key_exists('age', $conditionParams)) $statment->bindParam(':age', $conditionParams['age']);
 
             $statment->execute();
             return $statment->fetchAll(PDO::FETCH_ASSOC);
